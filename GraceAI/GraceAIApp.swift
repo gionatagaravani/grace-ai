@@ -22,11 +22,18 @@ struct GraceAIApp: App {
     }()
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("hasSeenPaywall") private var hasSeenPaywall = false
 
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
                 ContentView()
+                    .fullScreenCover(isPresented: Binding(
+                        get: { !hasSeenPaywall },
+                        set: { hasSeenPaywall = !$0 }
+                    )) {
+                        PaywallView()
+                    }
                     .transition(.opacity)
             } else {
                 OnboardingView()
