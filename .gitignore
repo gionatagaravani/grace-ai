@@ -37,4 +37,4 @@ core
 node_modules
 .expo
 
-.antigravity/*
+# .antigravity/*
