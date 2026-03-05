@@ -6,8 +6,8 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("Chat", systemImage: "message.fill", value: 0) {
-                ChatView()
+            Tab("Home", systemImage: "house.fill", value: 0) {
+                HomeDashboardView(selectedTab: $selectedTab)
             }
             Tab("Diario", systemImage: "book.fill", value: 1) {
                 JournalView()

@@ -22,7 +22,7 @@ struct JourneyView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 20)
             }
-            .background(colorScheme == .dark ? appCreamDark : appCream)
+            .background(colorScheme == .dark ? appNavy : appCream)
             .navigationTitle("Percorso")
             .navigationBarTitleDisplayMode(.large)
             .onAppear {

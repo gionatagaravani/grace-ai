@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct ChatView: View {
+struct ChatDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Query(sort: \ChatMessage.timestamp) private var messages: [ChatMessage]
@@ -10,36 +10,41 @@ struct ChatView: View {
     @State private var selectedStyle: ConversationStyle = .empathetic
     @State private var showSettings: Bool = false
     @State private var animatedMessageIDs: Set<UUID> = []
+    
+    var initialPrompt: String? = nil
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                stylePicker
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 12)
+        VStack(spacing: 0) {
+            stylePicker
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
 
-                Divider().opacity(0.3)
+            Divider().opacity(0.3)
 
-                chatContent
+            chatContent
 
-                Divider().opacity(0.3)
+            Divider().opacity(0.3)
 
-                inputBar
-            }
-            .background(colorScheme == .dark ? appCreamDark : appCream)
-            .navigationTitle("Grace AI")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Impostazioni", systemImage: "gearshape") {
-                        showSettings = true
-                    }
-                    .foregroundStyle(appGold)
+            inputBar
+        }
+        .background(colorScheme == .dark ? appNavy : appCream)
+        .navigationTitle("Grace AI")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Impostazioni", systemImage: "gearshape") {
+                    showSettings = true
                 }
+                .foregroundStyle(appGold)
             }
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+        }
+        .onAppear {
+            if let prompt = initialPrompt, !prompt.isEmpty {
+                inputText = prompt
             }
         }
     }
@@ -143,7 +148,7 @@ struct ChatView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(colorScheme == .dark ? appCreamDark : appCream)
+        .background(colorScheme == .dark ? appNavy : appCream)
     }
 
     private func sendMessage() {
