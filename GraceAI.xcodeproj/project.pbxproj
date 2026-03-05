@@ -645,6 +645,7 @@
 				CODE_SIGN_ENTITLEMENTS = GraceAIWidget/GraceAIWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZB8Y2Z48P7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GraceAIWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Grace AI";
@@ -672,6 +673,7 @@
 				CODE_SIGN_ENTITLEMENTS = GraceAIWidget/GraceAIWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = ZB8Y2Z48P7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GraceAIWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Grace AI";
