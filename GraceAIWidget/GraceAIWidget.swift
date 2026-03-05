@@ -1,136 +1,182 @@
 import WidgetKit
 import SwiftUI
 
-nonisolated struct GraceEntry: TimelineEntry {
+// MARK: - Colori Personalizzati
+private let deepNavy = Color(red: 26/255, green: 43/255, blue: 60/255) // #1A2B3C
+private let matteGold = Color(red: 212/255, green: 175/255, blue: 55/255) // #D4AF37
+
+// MARK: - Timeline Entry
+struct GraceAIEntry: TimelineEntry {
     let date: Date
-    let streak: Int
-    let lastReflection: String
+    let streakCount: Int
+    let dailyVerse: String
+    let verseReference: String
+    let weeklyProgress: [Bool]
 }
 
-nonisolated struct GraceProvider: TimelineProvider {
-    func placeholder(in context: Context) -> GraceEntry {
-        GraceEntry(date: .now, streak: 7, lastReflection: "\"Rendete grazie al Signore, perché egli è buono.\" — Salmo 136:1")
+// MARK: - Timeline Provider
+struct GraceAIProvider: TimelineProvider {
+    let appGroupID = "group.app.rork.graceai.shared"
+    
+    private func getEntry(for date: Date) -> GraceAIEntry {
+        let defaults = UserDefaults(suiteName: appGroupID)
+        
+        let streakCount = defaults?.integer(forKey: "streakCount") ?? 0
+        let dailyVerse = defaults?.string(forKey: "dailyVerse") ?? "Non temere, perché io sono con te..."
+        let verseReference = defaults?.string(forKey: "verseReference") ?? "Isaia 41:10"
+        let weeklyProgress = defaults?.array(forKey: "weeklyProgress") as? [Bool] ?? [false, false, false, false, false, false, false]
+        
+        return GraceAIEntry(
+            date: date,
+            streakCount: streakCount,
+            dailyVerse: dailyVerse,
+            verseReference: verseReference,
+            weeklyProgress: weeklyProgress
+        )
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (GraceEntry) -> Void) {
-        let entry = loadEntry()
+    func placeholder(in context: Context) -> GraceAIEntry {
+        GraceAIEntry(
+            date: Date(),
+            streakCount: 5,
+            dailyVerse: "Non temere, perché io sono con te, non smarrirti, perché io sono il tuo Dio.",
+            verseReference: "Isaia 41:10",
+            weeklyProgress: [true, true, true, false, false, false, false]
+        )
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (GraceAIEntry) -> ()) {
+        let entry = getEntry(for: Date())
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<GraceEntry>) -> Void) {
-        let entry = loadEntry()
-        let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
-        completion(Timeline(entries: [entry], policy: .after(nextUpdate)))
-    }
-
-    private func loadEntry() -> GraceEntry {
-        let shared = UserDefaults(suiteName: "group.app.rork.graceai.shared")
-        let streak = shared?.integer(forKey: "streak") ?? 0
-        let reflection = shared?.string(forKey: "lastReflection") ?? "Inizia il tuo percorso di gratitudine oggi."
-        return GraceEntry(date: .now, streak: streak, lastReflection: reflection)
+    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+        let entry = getEntry(for: Date())
+        let timeline = Timeline(entries: [entry], policy: .never)
+        completion(timeline)
     }
 }
 
-struct GraceWidgetSmallView: View {
-    var entry: GraceEntry
-
-    private let gold = Color(red: 212/255, green: 175/255, blue: 55/255)
-    private let navy = Color(red: 26/255, green: 43/255, blue: 60/255)
-    private let cream = Color(red: 249/255, green: 249/255, blue: 247/255)
-
+// MARK: - UI: Componente Giorno (Weekly Tracker)
+struct GraceAITrackerDayView: View {
+    let dayLabel: String
+    let isCompleted: Bool
+    
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "flame.fill")
-                .font(.system(size: 28))
-                .foregroundStyle(gold.gradient)
-
-            Text("\(entry.streak)")
-                .font(.system(size: 36, weight: .bold, design: .serif))
-                .foregroundStyle(navy)
-
-            Text("giorni")
-                .font(.system(.caption, design: .serif))
-                .foregroundStyle(.secondary)
+        VStack(spacing: 4) {
+            Circle()
+                .fill(isCompleted ? matteGold : Color.white.opacity(0.3))
+                .frame(width: 8, height: 8)
+            Text(dayLabel)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.white)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .containerBackground(cream, for: .widget)
     }
 }
 
-struct GraceWidgetMediumView: View {
-    var entry: GraceEntry
-
-    private let gold = Color(red: 212/255, green: 175/255, blue: 55/255)
-    private let navy = Color(red: 26/255, green: 43/255, blue: 60/255)
-    private let cream = Color(red: 249/255, green: 249/255, blue: 247/255)
-
+// MARK: - UI: Home Screen Widget (.systemMedium)
+struct GraceAIMediumWidgetView: View {
+    var entry: GraceAIEntry
+    let days = ["L", "M", "M", "G", "V", "S", "D"]
+    
     var body: some View {
-        HStack(spacing: 16) {
-            VStack(spacing: 6) {
-                Image(systemName: "flame.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(gold.gradient)
-
-                Text("\(entry.streak)")
-                    .font(.system(size: 32, weight: .bold, design: .serif))
-                    .foregroundStyle(navy)
-
-                Text("streak")
-                    .font(.system(.caption2, design: .serif))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(width: 80)
-
-            Divider()
-                .frame(height: 60)
-                .overlay(gold.opacity(0.3))
-
-            VStack(alignment: .leading, spacing: 6) {
+        VStack(spacing: 12) {
+            // Header
+            HStack {
+                Text("Il tuo Versetto")
+                    .font(.system(size: 14, weight: .bold, design: .serif))
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                // Pillola Streak
                 HStack(spacing: 4) {
-                    Image(systemName: "sparkles")
-                        .font(.caption2)
-                        .foregroundStyle(gold)
-                    Text("Parola di Conforto")
-                        .font(.system(.caption2, design: .serif, weight: .semibold))
-                        .foregroundStyle(gold)
+                    Image(systemName: "flame.fill")
+                        .foregroundColor(matteGold)
+                    Text("\(entry.streakCount)")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white)
                 }
-
-                Text(entry.lastReflection)
-                    .font(.system(.caption, design: .serif))
-                    .foregroundStyle(navy)
-                    .lineLimit(4)
-                    .multilineTextAlignment(.leading)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.15))
+                .clipShape(Capsule())
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            // Corpo Centrale
+            VStack(spacing: 4) {
+                Text(entry.dailyVerse)
+                    .font(.system(size: 16, weight: .regular, design: .serif))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.8)
+                
+                Text(entry.verseReference)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(matteGold)
+            }
+            .frame(maxHeight: .infinity)
+            
+            // Footer: Weekly Tracker
+            HStack(spacing: 16) {
+                ForEach(0..<7, id: \.self) { index in
+                    let isCompleted = index < entry.weeklyProgress.count ? entry.weeklyProgress[index] : false
+                    GraceAITrackerDayView(dayLabel: days[index], isCompleted: isCompleted)
+                }
+            }
         }
-        .padding(.horizontal, 4)
-        .containerBackground(cream, for: .widget)
     }
 }
 
+// MARK: - UI: Lock Screen Widget (.accessoryRectangular)
+struct GraceAILockScreenWidgetView: View {
+    var entry: GraceAIEntry
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: "flame.fill")
+                Text("\(entry.streakCount) Giorni")
+                    .font(.headline)
+            }
+            Text(entry.dailyVerse)
+                .font(.caption)
+                .lineLimit(2)
+        }
+    }
+}
+
+// MARK: - Main Entry View
+struct GraceAIWidgetEntryView : View {
+    var entry: GraceAIProvider.Entry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        switch family {
+        case .systemMedium:
+            GraceAIMediumWidgetView(entry: entry)
+                .containerBackground(deepNavy, for: .widget)
+        case .accessoryRectangular:
+            GraceAILockScreenWidgetView(entry: entry)
+                .containerBackground(.clear, for: .widget)
+        default:
+            Text("Formato non supportato")
+                .containerBackground(deepNavy, for: .widget)
+        }
+    }
+}
+
+// MARK: - Widget Configuration
 struct GraceAIWidget: Widget {
     let kind: String = "GraceAIWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: GraceProvider()) { entry in
-            GraceWidgetView(entry: entry)
+        StaticConfiguration(kind: kind, provider: GraceAIProvider()) { entry in
+            GraceAIWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Grace AI")
-        .description("Il tuo streak di gratitudine e l'ultima riflessione.")
-        .supportedFamilies([.systemSmall, .systemMedium])
-    }
-}
-
-struct GraceWidgetView: View {
-    @Environment(\.widgetFamily) var family
-    var entry: GraceEntry
-
-    var body: some View {
-        switch family {
-        case .systemSmall:
-            GraceWidgetSmallView(entry: entry)
-        default:
-            GraceWidgetMediumView(entry: entry)
-        }
+        .configurationDisplayName("Grace AI Widget")
+        .description("Il tuo versetto quotidiano e i tuoi progressi.")
+        .supportedFamilies([.systemMedium, .accessoryRectangular])
     }
 }
