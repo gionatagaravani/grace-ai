@@ -40,18 +40,18 @@ struct HomeDashboardView: View {
                 impactMed.impactOccurred()
                 showSettings = true
             } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .foregroundStyle(.white)
-                        .font(.caption)
-                    Text("\(currentStreak) Giorni")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.white)
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(appGold)
-                .clipShape(Capsule())
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(colorScheme == .dark ? appCream : appNavy)
+                    .padding(10)
+                    .background(
+                        Circle()
+                            .fill(colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.05))
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(colorScheme == .dark ? Color.white.opacity(0.1) : Color.black.opacity(0.1), lineWidth: 0.5)
+                    )
             }
         }
         .padding(.horizontal, 20)
