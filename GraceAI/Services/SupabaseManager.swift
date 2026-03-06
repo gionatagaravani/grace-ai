@@ -17,6 +17,17 @@ class SupabaseManager: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUserID: UUID?
     
+    struct ProfileResponse: Decodable {
+        let user_name: String?
+    }
+    
+    struct OnboardingDataResponse: Decodable {
+        let feeling: String
+        let goal: String
+        let guide_tone: String
+        let commitment: String
+    }
+    
     private init() {
         self.client = SupabaseClient(supabaseURL: supabaseURL, supabaseKey: supabaseKey)
         
@@ -70,7 +81,57 @@ class SupabaseManager: ObservableObject {
     
     // MARK: - Data Synchronization
     
-    func saveOnboardingData(userName: String, feeling: String, goal: String, guideTone: String, commitment: String) async throws {
+    func syncUserContext() async throws {
+        guard let userId = currentUserID else { return }
+        
+        do {
+            // Check if user already has onboarding data
+            let existingData: [OnboardingDataResponse] = try await client.database
+                .from("onboarding_data")
+                .select()
+                .eq("user_id", value: userId.uuidString)
+                .execute()
+                .value
+            
+            if let data = existingData.first {
+                // User already exists, fetch username and overwrite local defaults
+                let profileData: [ProfileResponse] = try await client.database
+                    .from("profiles")
+                    .select("user_name")
+                    .eq("id", value: userId.uuidString)
+                    .execute()
+                    .value
+                
+                DispatchQueue.main.async {
+                    if let profile = profileData.first, let name = profile.user_name {
+                        UserDefaults.standard.set(name, forKey: "userName")
+                    }
+                    UserDefaults.standard.set(data.feeling, forKey: "userFeeling")
+                    UserDefaults.standard.set(data.goal, forKey: "userGoal")
+                    UserDefaults.standard.set(data.guide_tone, forKey: "userGuideTone")
+                    UserDefaults.standard.set(data.commitment, forKey: "userCommitment")
+                    
+                    // Mark onboarding and paywall as completed/seen because they are logging into an existing account
+                    UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+                    UserDefaults.standard.set(true, forKey: "hasSeenPaywall")
+                }
+            } else {
+                // New user, save local onboarding data to the DB
+                let userName = UserDefaults.standard.string(forKey: "userName") ?? ""
+                let feeling = UserDefaults.standard.string(forKey: "userFeeling") ?? ""
+                let goal = UserDefaults.standard.string(forKey: "userGoal") ?? ""
+                let tone = UserDefaults.standard.string(forKey: "userGuideTone") ?? ""
+                let commitment = UserDefaults.standard.string(forKey: "userCommitment") ?? ""
+                
+                try await saveOnboardingData(userName: userName, feeling: feeling, goal: goal, guideTone: tone, commitment: commitment)
+            }
+        } catch {
+            print("Failed to sync user context: \(error)")
+            throw error
+        }
+    }
+    
+    private func saveOnboardingData(userName: String, feeling: String, goal: String, guideTone: String, commitment: String) async throws {
         guard let userId = currentUserID else { return }
         
         // 1. Update public.profiles with userName

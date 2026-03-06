@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct PaywallView: View {
-    @Environment(\.dismiss) var dismiss
+    @AppStorage("hasSeenPaywall") private var hasSeenPaywall = false
     
     @State private var selectedPlan: Plan = .annual
     @State private var showCloseButton = false
@@ -22,7 +22,9 @@ struct PaywallView: View {
                 HStack {
                     Spacer()
                     Button(action: {
-                        dismiss()
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            hasSeenPaywall = true
+                        }
                     }) {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .bold))
@@ -98,7 +100,9 @@ struct PaywallView: View {
                         text: selectedPlan == .annual ? "Start 3-Day Free Trial" : "Continue",
                         subtitle: selectedPlan == .annual ? "Then $49.99/year. Cancel anytime." : "Then $6.99/week. Cancel anytime."
                     ) {
-                        // Action
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            hasSeenPaywall = true
+                        }
                     }
                     
                     PaywallTrustElementsView(

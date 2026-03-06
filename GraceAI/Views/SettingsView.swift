@@ -6,6 +6,7 @@ struct SettingsView: View {
     @State private var notificationService = NotificationService()
     @State private var notificationTime = Date()
     @State private var notificationsEnabled: Bool = false
+    @State private var showLogoutAlert = false
 
     var body: some View {
         NavigationStack {
@@ -60,6 +61,16 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Button(role: .destructive) {
+                        showLogoutAlert = true
+                    } label: {
+                        Label("Esci dall'account", systemImage: "arrow.right.square.fill")
+                    }
+                } header: {
+                    Text("Account")
+                }
+
+                Section {
                     VStack(spacing: 8) {
                         Image(systemName: "hands.sparkles.fill")
                             .font(.largeTitle)
@@ -76,6 +87,16 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity)
                     .listRowBackground(Color.clear)
                 }
+            }
+            .alert("Esci dall'account", isPresented: $showLogoutAlert) {
+                Button("Esci", role: .destructive) {
+                    Task {
+                        try? await SupabaseManager.shared.signOut()
+                    }
+                }
+                Button("Annulla", role: .cancel) {}
+            } message: {
+                Text("Sei sicuro di voler uscire?")
             }
             .navigationTitle("Impostazioni")
             .navigationBarTitleDisplayMode(.inline)

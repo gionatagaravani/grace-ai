@@ -1,14 +1,5 @@
 import SwiftUI
 
-// MARK: - Language model
-
-private struct BibleLanguage: Identifiable {
-    let id: String
-    let name: String
-    let flag: String
-    var translations: [BibleTranslationMeta] = []
-}
-
 /// Full-screen two-step picker: 1) choose language  2) choose translation
 struct BibleWelcomeView: View {
     @Binding var loadedBible: BibleTranslation?

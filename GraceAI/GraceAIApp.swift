@@ -34,16 +34,16 @@ struct GraceAIApp: App {
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
-                if supabaseManager.isAuthenticated {
+                if !hasSeenPaywall {
+                    // Step 1: show paywall after onboarding, before any auth check
+                    PaywallView()
+                        .transition(.opacity)
+                } else if supabaseManager.isAuthenticated {
+                    // Step 3: authenticated → dashboard
                     ContentView()
-                        .fullScreenCover(isPresented: Binding(
-                            get: { !hasSeenPaywall },
-                            set: { hasSeenPaywall = !$0 }
-                        )) {
-                            PaywallView()
-                        }
                         .transition(.opacity)
                 } else {
+                    // Step 2: paywall seen but not logged in → login
                     LoginView()
                         .transition(.opacity)
                 }
@@ -54,18 +54,12 @@ struct GraceAIApp: App {
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: supabaseManager.isAuthenticated) { _, isAuthenticated in
-            if isAuthenticated && hasCompletedOnboarding {
+            if isAuthenticated {
                 Task {
                     do {
-                        try await supabaseManager.saveOnboardingData(
-                            userName: storedUserName,
-                            feeling: storedFeeling,
-                            goal: storedGoal,
-                            guideTone: storedTone,
-                            commitment: storedCommitment
-                        )
+                        try await supabaseManager.syncUserContext()
                     } catch {
-                        print("Failed to save onboarding data: \(error)")
+                        print("Failed to sync context data: \(error)")
                     }
                 }
             }

@@ -8,6 +8,14 @@ struct BibleTranslationMeta: Identifiable, Codable {
 }
 
 
+/// Represents a language grouping of Bible translations
+struct BibleLanguage: Identifiable {
+    let id: String
+    let name: String
+    let flag: String
+    var translations: [BibleTranslationMeta] = []
+}
+
 // MARK: - API Response Models (Parsing the flat JSON)
 
 struct BibleTranslationResponse: Codable {

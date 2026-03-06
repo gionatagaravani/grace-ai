@@ -49,45 +49,54 @@ class BibleDownloadManager {
         return FileManager.default.fileExists(atPath: fileURL.path)
     }
     
+    // Delegate to track download progress
+    private class BibleProgressDelegate: NSObject, URLSessionDownloadDelegate {
+        var onProgress: ((Double) -> Void)?
+        
+        func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+            if totalBytesExpectedToWrite > 0 {
+                let progress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+                onProgress?(progress)
+            }
+        }
+        
+        func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) { }
+    }
+
     /// Downloads the JSON file asynchronously, tracks progress, and saves to FileManager
     func downloadBible(translationID: String, url: URL) async throws {
         // Initialize progress
-        downloadProgress[translationID] = 0.0
+        self.downloadProgress[translationID] = 0.0
         
-        let urlSession = URLSession.shared
-        let (asyncBytes, response) = try await urlSession.bytes(from: url)
+        let delegate = BibleProgressDelegate()
+        delegate.onProgress = { [weak self] progress in
+            Task { @MainActor in
+                self?.downloadProgress[translationID] = progress
+            }
+        }
+        
+        let request = URLRequest(url: url)
+        let (tempURL, response) = try await URLSession.shared.download(for: request, delegate: delegate)
         
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             throw URLError(.badServerResponse)
         }
         
-        let expectedLength = response.expectedContentLength
-        // Typical JSON for ~6MB text
-        var data = Data()
-        data.reserveCapacity(Int(expectedLength > 0 ? expectedLength : 6_000_000))
+        let fileURL = getFileURL(for: translationID)
         
-        var downloadedBytes = 0
-        let updateThreshold = 100 * 1024 // Update UI every 100 KB
-        
-        for try await byte in asyncBytes {
-            data.append(byte)
-            downloadedBytes += 1
-            
-            // Periodically update the published progress to prevent heavy UI re-renders
-            if expectedLength > 0 && downloadedBytes % updateThreshold == 0 {
-                let progress = Double(downloadedBytes) / Double(expectedLength)
-                self.downloadProgress[translationID] = progress
-            }
+        // Remove existing file if any
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            try FileManager.default.removeItem(at: fileURL)
         }
+        
+        // Move from temp location to Document Directory
+        try FileManager.default.moveItem(at: tempURL, to: fileURL)
         
         // Ensure final progress is set
         self.downloadProgress[translationID] = 1.0
         
-        // Save the downloaded memory data to disk
-        let fileURL = getFileURL(for: translationID)
-        try data.write(to: fileURL)
-        
-        // Cleanup progress state once completed
+        // Give UI a moment to reflect 100% before cleaning up
+        try? await Task.sleep(nanoseconds: 300_000_000)
         self.downloadProgress.removeValue(forKey: translationID)
     }
     
