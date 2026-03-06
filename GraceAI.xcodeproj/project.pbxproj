@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C3593AF4F07111407E6BAE9F /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 6735E6C27071E60B83401BE7 /* Supabase */; };
 		XX6A4FF43979B536B3A46DXX /* GraceAIWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = XXF84AFA715F0C31C561F8XX /* GraceAIWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -68,16 +69,22 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		105FC57C2E9EAD3100EA8BCF /* GraceAI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = GraceAI;
 			sourceTree = "<group>";
 		};
 		105FC58C2E9EAD3200EA8BCF /* GraceAITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = GraceAITests;
 			sourceTree = "<group>";
 		};
 		105FC5962E9EAD3200EA8BCF /* GraceAIUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = GraceAIUITests;
 			sourceTree = "<group>";
 		};
@@ -96,6 +103,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3593AF4F07111407E6BAE9F /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,6 +175,7 @@
 			);
 			name = GraceAI;
 			packageProductDependencies = (
+				6735E6C27071E60B83401BE7 /* Supabase */,
 			);
 			productName = GraceAI;
 			productReference = 105FC57A2E9EAD3100EA8BCF /* GraceAI.app */;
@@ -189,8 +198,6 @@
 				105FC58C2E9EAD3200EA8BCF /* GraceAITests */,
 			);
 			name = GraceAITests;
-			packageProductDependencies = (
-			);
 			productName = GraceAITests;
 			productReference = 105FC5892E9EAD3200EA8BCF /* GraceAITests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -212,8 +219,6 @@
 				105FC5962E9EAD3200EA8BCF /* GraceAIUITests */,
 			);
 			name = GraceAIUITests;
-			packageProductDependencies = (
-			);
 			productName = GraceAIUITests;
 			productReference = 105FC5932E9EAD3200EA8BCF /* GraceAIUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -270,6 +275,9 @@
 			);
 			mainGroup = 105FC5712E9EAD3100EA8BCF;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				1FFBADE62F5ACFEB007332A5 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 105FC57B2E9EAD3100EA8BCF /* Products */;
 			projectDirPath = "";
@@ -744,6 +752,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1FFBADE62F5ACFEB007332A5 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		6735E6C27071E60B83401BE7 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1FFBADE62F5ACFEB007332A5 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 105FC5722E9EAD3100EA8BCF /* Project object */;
 }

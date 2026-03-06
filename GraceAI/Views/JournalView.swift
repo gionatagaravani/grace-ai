@@ -151,6 +151,8 @@ struct JournalView: View {
             streakTrigger += 1
 
             streakService.recalculate(entries: entries)
+            
+            try? await SupabaseManager.shared.syncJournalEntry(entry)
         }
     }
 }

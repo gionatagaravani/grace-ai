@@ -160,9 +160,15 @@ struct ChatDetailView: View {
         inputText = ""
 
         Task {
+            try? await SupabaseManager.shared.syncChatMessage(userMessage)
+        }
+
+        Task {
             let response = await aiService.generateChatResponse(for: text, style: selectedStyle)
             let aiMessage = ChatMessage(content: response, isFromUser: false, conversationStyle: selectedStyle.rawValue)
             modelContext.insert(aiMessage)
+            
+            try? await SupabaseManager.shared.syncChatMessage(aiMessage)
         }
     }
 }
