@@ -162,6 +162,31 @@ class SupabaseManager: ObservableObject {
             .upsert(data)
             .execute()
     }
+    
+    // MARK: - User Stats (Percorso) Synchronization
+    
+    func syncUserStats(currentStreak: Int, totalEntries: Int, activeDays: Int) async throws {
+        guard let userId = currentUserID else { return }
+        
+        struct UserStatsData: Encodable {
+            let id: UUID
+            let current_streak: Int
+            let total_entries: Int
+            let active_days: Int
+        }
+        
+        let data = UserStatsData(
+            id: userId,
+            current_streak: currentStreak,
+            total_entries: totalEntries,
+            active_days: activeDays
+        )
+        
+        try await client.database
+            .from("user_stats")
+            .upsert(data)
+            .execute()
+    }
 }
 
 

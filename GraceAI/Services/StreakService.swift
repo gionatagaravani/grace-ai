@@ -27,6 +27,19 @@ class StreakService {
 
         let shared = UserDefaults(suiteName: "group.app.rork.graceai.shared")
         shared?.set(currentStreak, forKey: "streak")
+        
+        // Sync stats to Supabase asynchronously
+        Task {
+            do {
+                try await SupabaseManager.shared.syncUserStats(
+                    currentStreak: self.currentStreak,
+                    totalEntries: self.totalEntries,
+                    activeDays: self.journalDays.count
+                )
+            } catch {
+                print("Failed to sync user stats to Supabase: \(error)")
+            }
+        }
 
         if let lastEntry = entries.sorted(by: { $0.date > $1.date }).first {
             shared?.set(lastEntry.aiReflection, forKey: "lastReflection")
