@@ -3,6 +3,7 @@ import SwiftUI
 struct BibleTabView: View {
     @State private var loadedBible: BibleTranslation?
     @State private var selectedTestament: Testament = .old
+    @State private var downloadManager = BibleDownloadManager()
     
     // Convert BibleTranslationModels.Book → BibleBook for navigation
     private func toBibleBook(_ book: Book, in bible: BibleTranslation) -> BibleBook {
@@ -81,6 +82,45 @@ struct BibleTabView: View {
         }
         .tint(Color(hex: "#1A2B3C"))
         .animation(.easeInOut(duration: 0.5), value: loadedBible == nil)
+        .task {
+            if loadedBible == nil {
+                autoLoadLocalBible()
+            }
+        }
+    }
+    
+    private func autoLoadLocalBible() {
+        // 1. Try last used translation
+        if let lastId = UserDefaults.standard.string(forKey: "lastUsedBibleId") {
+            if let bible = try? downloadManager.loadLocalBible(translationID: lastId) {
+                print("Auto-loaded last used Bible: \(lastId)")
+                self.loadedBible = bible
+                return
+            }
+        }
+        
+        // 2. Try any downloaded translation from sync list
+        if let downloadedIds = UserDefaults.standard.stringArray(forKey: "downloadedBibleIds") {
+            for id in downloadedIds {
+                if let bible = try? downloadManager.loadLocalBible(translationID: id) {
+                    print("Auto-loaded available Bible from sync: \(id)")
+                    self.loadedBible = bible
+                    UserDefaults.standard.set(id, forKey: "lastUsedBibleId")
+                    return
+                }
+            }
+        }
+        
+        // 3. Last resort: check common IDs locally (fallback if sync list fails)
+        let commonIds = ["kjv", "diodati", "asv"]
+        for id in commonIds {
+            if let bible = try? downloadManager.loadLocalBible(translationID: id) {
+                print("Auto-loaded common Bible fallback: \(id)")
+                self.loadedBible = bible
+                UserDefaults.standard.set(id, forKey: "lastUsedBibleId")
+                return
+            }
+        }
     }
 }
 

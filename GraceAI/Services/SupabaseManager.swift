@@ -28,6 +28,10 @@ class SupabaseManager: ObservableObject {
         let commitment: String
     }
     
+    struct DownloadedBibleResponse: Decodable {
+        let bible_id: String
+    }
+    
     private init() {
         self.client = SupabaseClient(supabaseURL: supabaseURL, supabaseKey: supabaseKey)
         
@@ -115,6 +119,9 @@ class SupabaseManager: ObservableObject {
                     UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
                     UserDefaults.standard.set(true, forKey: "hasSeenPaywall")
                 }
+                
+                // Fetch and sync downloaded bibles
+                try await syncDownloadedBibles()
             } else {
                 // New user, save local onboarding data to the DB
                 let userName = UserDefaults.standard.string(forKey: "userName") ?? ""
@@ -166,6 +173,24 @@ class SupabaseManager: ObservableObject {
             .from("onboarding_data")
             .insert(data)
             .execute()
+    }
+    
+    private func syncDownloadedBibles() async throws {
+        guard let userId = currentUserID else { return }
+        
+        let downloads: [DownloadedBibleResponse] = try await client.database
+            .from("downloaded_bibles")
+            .select("bible_id")
+            .eq("user_id", value: userId.uuidString)
+            .execute()
+            .value
+        
+        let bibleIds = downloads.map { $0.bible_id }
+        
+        DispatchQueue.main.async {
+            UserDefaults.standard.set(bibleIds, forKey: "downloadedBibleIds")
+            print("Synced \(bibleIds.count) bible downloads from Supabase.")
+        }
     }
     
     // MARK: - App Data Synchronization

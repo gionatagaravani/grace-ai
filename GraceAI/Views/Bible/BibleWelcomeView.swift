@@ -258,6 +258,7 @@ struct BibleWelcomeView: View {
             try await manager.downloadBible(translationID: translation.id, url: translation.url)
             if let bible = try manager.loadLocalBible(translationID: translation.id) {
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+                UserDefaults.standard.set(translation.id, forKey: "lastUsedBibleId")
                 withAnimation(.easeInOut(duration: 0.5)) {
                     loadedBible = bible
                 }

@@ -92,6 +92,9 @@ class BibleDownloadManager {
         // Move from temp location to Document Directory
         try FileManager.default.moveItem(at: tempURL, to: fileURL)
         
+        // Sync with Supabase
+        try? await registerWithSupabase(translationID: translationID)
+        
         // Ensure final progress is set
         self.downloadProgress[translationID] = 1.0
         
@@ -107,10 +110,44 @@ class BibleDownloadManager {
             do {
                 try FileManager.default.removeItem(at: fileURL)
                 print("Deleted \(translationID) successfully to free up space.")
+                
+                // Unregister from Supabase
+                Task {
+                    try? await unregisterFromSupabase(translationID: translationID)
+                }
             } catch {
                 print("Failed to delete local bible file: \(error.localizedDescription)")
             }
         }
+    }
+    
+    // MARK: - Supabase Sync Helpers
+    
+    private func registerWithSupabase(translationID: String) async throws {
+        guard let userId = SupabaseManager.shared.currentUserID else { return }
+        
+        struct DownloadedBible: Encodable {
+            let user_id: UUID
+            let bible_id: String
+        }
+        
+        let data = DownloadedBible(user_id: userId, bible_id: translationID)
+        
+        try await SupabaseManager.shared.client.database
+            .from("downloaded_bibles")
+            .upsert(data) // Use upsert to avoid duplicate errors
+            .execute()
+    }
+    
+    private func unregisterFromSupabase(translationID: String) async throws {
+        guard let userId = SupabaseManager.shared.currentUserID else { return }
+        
+        try await SupabaseManager.shared.client.database
+            .from("downloaded_bibles")
+            .delete()
+            .eq("user_id", value: userId.uuidString)
+            .eq("bible_id", value: translationID)
+            .execute()
     }
     
     /// Loads and parses the downloaded JSON file into the structured App Model
