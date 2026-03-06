@@ -103,7 +103,10 @@ struct PlayerBottomBar: View {
 }
 
 #Preview {
+    let sampleVerse = BibleVerse(chapterId: "genesis-1", number: 1, text: "In the beginning God created the heavens and the earth.")
+    let sampleChapter = BibleChapter(bookId: "genesis", number: 1, verses: [sampleVerse])
+    let sampleBook = BibleBook(id: "genesis", name: "Genesis", testament: .old, chapters: [sampleChapter])
     NavigationView {
-        ReadingView(book: BibleDataService.shared.getBooks().first!, chapter: BibleDataService.shared.getBooks().first!.chapters.first!)
+        ReadingView(book: sampleBook, chapter: sampleChapter)
     }
 }
