@@ -69,22 +69,16 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		105FC57C2E9EAD3100EA8BCF /* GraceAI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = GraceAI;
 			sourceTree = "<group>";
 		};
 		105FC58C2E9EAD3200EA8BCF /* GraceAITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = GraceAITests;
 			sourceTree = "<group>";
 		};
 		105FC5962E9EAD3200EA8BCF /* GraceAIUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = GraceAIUITests;
 			sourceTree = "<group>";
 		};

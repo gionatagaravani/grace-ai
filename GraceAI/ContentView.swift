@@ -12,7 +12,10 @@ struct ContentView: View {
             Tab("Diario", systemImage: "book.fill", value: 1) {
                 JournalView()
             }
-            Tab("Percorso", systemImage: "flame.fill", value: 2) {
+            Tab("Bibbia", systemImage: "text.book.closed.fill", value: 2) {
+                BibleTabView()
+            }
+            Tab("Percorso", systemImage: "flame.fill", value: 3) {
                 JourneyView()
             }
         }
